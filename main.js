@@ -1,50 +1,23 @@
-var http = require('http')
-var fs = require('fs');
-var url = require('url');
-var qs = require('querystring');
+const express = require('express');
+var path = require('path');
+const app = express();
+const fs = require('fs');
 
-function templateHTML(title, body){
-  return `
-  <!DOCTYPE html>
-  <html>
-  <head>
-    <title>${title}</title>
-    <meta charset="utf-8">
-  </head>
-  <body>
-    <h1><a href="/">WEB</a></h1>
-    ${body}
-  </body>
-  </html>
-  `;
-}
+app.use(express.static(path.join(__dirname, 'src')));//여기 부분 경로를 제대로 설정해주지 않았기에 오류가 있었다.
+app.get('/', function(request, response) {
+  fs.readFile(`main_page.html`, 'utf8', function(err, description){
+    response.send(description);
+  });
+});
 
-var app = http.createServer(function(request, response){
-  var _url = request.url;
-  var queryData = url.parse(_url, true).query;
-  var pathname = url.parse(_url, true).pathname;
-  var template;
-  //console.log(url)
-  if(pathname === '/'){//main_page.js을 읽어와서 출력
-        fs.readFile(`main_page.html`, 'utf8', function(err, description){
-          template = description;
-          response.writeHead(200);
-          response.end(template);
-        });
-  }
-  else if(pathname === '/views'){//login을 눌렀을때 로그인 페이지가 나오게 설계
+app.get('/views', function(request, response) {
   fs.readdir('/views', function(error, filelist){
       fs.readFile(`views/login.js`, 'utf8', function(err, description){
-      //  template = description;
-        template = description;
-        response.writeHead(200);
-        response.end(template);
+        response.end(description);
       });
     });
-  }
+});
 
-})
-
-app.listen(3000);
-
-console.log('Server running at http://localhost:3000');
+app.listen(3000, function() {
+  console.log('Example app listening on port 3000!')
+});
